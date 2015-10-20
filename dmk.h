@@ -17,9 +17,13 @@
 
 // OS
 
-#if defined( WIN32 )
+#if defined( WIN32 ) || defined( _WIN32 )
 #define DMK_OS_WIN 1
 #else
+#ifdef __APPLE__
+#define DMK_OS_MAC 1
+#define DMK_OS_OSX 1
+#endif
 #define DMK_OS_UNIX 1
 #endif
 
@@ -110,10 +114,6 @@
 #if defined( DMK_COMPILER_MSVC )
 #include <yvals.h>
 #endif
-
-//#if defined(DMK_COMPILER_MSVC) &&
-#define DMK_NOEXCEPT noexcept
-#define DMK_NOEXCEPT throw( )
 
 #if defined( DMK_COMPILER_MSVC )
 #define DMK_NOEXCEPT _NOEXCEPT
