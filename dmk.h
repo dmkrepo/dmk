@@ -17,14 +17,14 @@
 
 // OS
 
-#if defined( WIN32 ) || defined( _WIN32 )
+#if defined( _WIN32 )
 #define DMK_OS_WIN 1
 #else
-#ifdef __APPLE__
+#define DMK_OS_UNIX 1
+#if defined( __APPLE__ )
 #define DMK_OS_MAC 1
 #define DMK_OS_OSX 1
 #endif
-#define DMK_OS_UNIX 1
 #endif
 
 // Compiler
@@ -117,10 +117,12 @@
 
 #if defined( DMK_COMPILER_MSVC )
 #define DMK_NOEXCEPT _NOEXCEPT
+#define DMK_NOEXCEPT_OP( x ) _NOEXCEPT_OP( x )
 #define DMK_CONSTEXPR_DATA _CONST_DATA
 #define DMK_CONSTEXPR_FUNC _CONST_FUN
 #else
 #define DMK_NOEXCEPT noexcept
+#define DMK_NOEXCEPT_OP( x ) noexcept( x )
 #define DMK_CONSTEXPR_DATA constexpr
 #define DMK_CONSTEXPR_FUNC constexpr
 #endif
@@ -228,5 +230,19 @@ namespace dmk
 
     template <typename _Type>
     using intsized_t = typename bits_tpl<sizeof( _Type ) * 8>::i;
+
+    typedef uint8_t byte_t;
+
+    template <size_t _N>
+    struct struct_padding
+    {
+    private:
+        byte_t __hidden_padding[_N];
+    };
+
+    template <>
+    struct struct_padding<0>
+    {
+    };
 
 } // namespace dmk
