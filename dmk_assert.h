@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dmk.h"
+#include "dmk_string.h"
 
 // Configuration
 
@@ -88,14 +89,6 @@ namespace dmk
         {
             os << "Object:   " << object << std::endl;
         }
-    }
-
-    template <typename _Type>
-    DMK_ALWAYS_INLINE std::string stringify( const _Type& value )
-    {
-        std::stringstream str;
-        str << value;
-        return str.str( );
     }
 
     template <typename _T1, typename _T2>
