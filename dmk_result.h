@@ -1,13 +1,16 @@
 #pragma once
 
 #include "dmk.h"
+#include "dmk_string.h"
 
 #include <string>
 #include <memory>
+#include <tuple>
+#include <iostream>
 
 namespace dmk
 {
-    // boolean type with optional error message (memory efficient - one pointer)
+    // boolean type with two state: true or error message (memory efficient - one pointer)
     struct bool_result
     {
     public:
@@ -62,4 +65,91 @@ namespace dmk
     private:
         const std::unique_ptr<std::string> m_error;
     };
+
+    // boolean type with optional message
+    struct result
+    {
+    public:
+        typedef std::tuple<const bool, const std::string> tuple;
+
+    public:
+        result( ) : m_ok( true )
+        {
+        }
+        result( bool ok ) : m_ok( ok )
+        {
+        }
+        result( bool ok, const u8string& message ) : m_ok( ok ), m_message( message )
+        {
+        }
+        result( bool ok, u8string&& message ) : m_ok( ok ), m_message( std::move( message ) )
+        {
+        }
+        result( const u8string& message ) : m_ok( false ), m_message( message )
+        {
+        }
+        result( u8string&& message ) : m_ok( false ), m_message( std::move( message ) )
+        {
+        }
+        result( const char* message ) : m_ok( false ), m_message( u8string( message ) )
+        {
+        }
+        template <typename... Args>
+        result( bool ok, const std::string& message, const Args&... args )
+            : m_ok( ok ), m_message( fmt::format( message, args... ) )
+        {
+        }
+        template <typename... Args>
+        result( bool ok, std::string&& message, const Args&... args )
+            : m_ok( ok ), m_message( fmt::format( std::move( message ), args... ) )
+        {
+        }
+
+        result( result&& ) = default;
+        result( const result& ) = default;
+
+        result& operator=( const result& ) = default;
+        result& operator=( result&& ) = default;
+
+        // bool conversion: bool_result result; ...  if(result) {...}
+        explicit operator bool( ) const
+        {
+            return m_ok;
+        }
+
+        // get message (no copy, returns const reference)
+        const std::string& message( ) const
+        {
+            return m_message;
+        }
+
+        // get message (no copy, returns reference)
+        std::string& message( )
+        {
+            return m_message.str( );
+        }
+
+        result& operator<<( const result& right )
+        {
+            m_ok = m_ok && right.m_ok;
+            if ( !m_message.empty( ) )
+            {
+                m_message += "; ";
+            }
+            m_message += right.m_message;
+            return *this;
+        }
+
+        static result exit_code( int code )
+        {
+            if ( code == 0 )
+                return true;
+            return result( false, fmt::format( "ExitCode = {}", code ) );
+        }
+
+    private:
+        u8string m_message;
+        bool m_ok;
+    };
+
 } // namespace dmk
